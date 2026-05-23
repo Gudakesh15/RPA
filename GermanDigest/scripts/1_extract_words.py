@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Step 1: Extract German words from raw URLs written by UiPath.
-Reads input\raw_searches.xlsx, strips filler words, deduplicates,
-builds DWDS lookup URLs, writes input\url_list.txt for the TAR creator.
+Reads input/raw_searches.xlsx, strips filler words, deduplicates,
+builds DWDS lookup URLs, writes input/url_list.txt for the TAR creator.
 """
 
 import pandas as pd
