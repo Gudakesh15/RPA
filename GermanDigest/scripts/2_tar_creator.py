@@ -2,7 +2,7 @@
 """
 Step 2: Crawl DWDS pages for each word and archive the HTML.
 Adapted from Avi's Crawler / 1_TarFileCreator.py.
-Reads input\url_list.txt, crawls each DWDS URL, saves HTML to archive\crawl_YYYYMMDD.tar.gz.
+Reads input/url_list.txt, crawls each DWDS URL, saves HTML to archive/crawl_YYYYMMDD.tar.gz.
 """
 
 import requests

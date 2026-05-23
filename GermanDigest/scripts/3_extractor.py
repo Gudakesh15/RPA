@@ -2,7 +2,7 @@
 """
 Step 3: Parse archived DWDS HTML pages and extract vocabulary data.
 Adapted from Avi's Crawler / 2_Dormeo Information extractor.py.
-Reads archive\crawl_YYYYMMDD.tar.gz, writes output\vocabulary_YYYYMMDD.xlsx.
+Reads archive/crawl_YYYYMMDD.tar.gz, writes output/vocabulary_YYYYMMDD.xlsx.
 """
 
 import os

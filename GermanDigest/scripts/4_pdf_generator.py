@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Step 4: Generate the PDF learning digest from the vocabulary Excel file.
-Reads output\vocabulary_YYYYMMDD.xlsx, writes output\digest_YYYYMMDD.pdf.
+Reads output/vocabulary_YYYYMMDD.xlsx, writes output/digest_YYYYMMDD.pdf.
 Requires: pip install fpdf2 openpyxl
 """
 
