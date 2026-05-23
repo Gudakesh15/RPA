@@ -4,21 +4,24 @@
 - Python installed
 - UiPath Studio installed and linked to university account
 - Git installed
+- VS Code installed
 
 ---
 
 ## Step 1 — Clone the repository
 
-Open **Terminal** and run:
+Open **VS Code**, then open the integrated terminal with `` Ctrl+` `` and run:
 ```
 git clone https://github.com/Gudakesh15/RPA.git
 ```
+
+Then open the cloned folder in VS Code: **File → Open Folder → select the `RPA` folder**.
 
 ---
 
 ## Step 2 — Create the working folder structure
 
-In Terminal:
+In the VS Code integrated terminal (`` Ctrl+` ``):
 ```
 mkdir C:\GermanDigest
 mkdir C:\GermanDigest\input
@@ -31,8 +34,9 @@ mkdir C:\GermanDigest\scripts
 
 ## Step 3 — Copy scripts to the working folder
 
+In the VS Code terminal:
 ```
-cp -r RPA\GermanDigest\scripts\* C:\GermanDigest\scripts\
+cp -r GermanDigest\scripts\* C:\GermanDigest\scripts\
 ```
 
 ---
@@ -49,10 +53,10 @@ pip install requests beautifulsoup4 pandas openpyxl fpdf2
 
 Copy the sample input file:
 ```
-cp RPA\GermanDigest\input\sample_raw_searches.xlsx C:\GermanDigest\input\raw_searches.xlsx
+cp GermanDigest\input\sample_raw_searches.xlsx C:\GermanDigest\input\raw_searches.xlsx
 ```
 
-Run each script in order:
+Run each script in order from the VS Code terminal:
 
 ```
 python C:\GermanDigest\scripts\1_extract_words.py
