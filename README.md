@@ -1,38 +1,38 @@
-# Windows Setup Guide — German Digest Bot
+# German Digest Bot — Setup & Run Guide
 
-Follow these steps in order on the Windows laptop.
-
----
-
-## Step 1 — Install Python (if not already installed)
-
-Download from: https://www.python.org/downloads/  
-During install: **tick "Add Python to PATH"** before clicking Install.
-
-Verify in Command Prompt:
-```
-python --version
-```
+## Prerequisites (already done)
+- Python installed
+- UiPath Studio installed and linked to university account
+- Git installed
 
 ---
 
-## Step 2 — Clone the repository
+## Step 1 — Clone the repository
 
-Open Command Prompt and run:
+Open **Terminal** and run:
 ```
 git clone https://github.com/Gudakesh15/RPA.git
-cd RPA
 ```
 
 ---
 
-## Step 3 — Create the working folder structure
+## Step 2 — Create the working folder structure
 
+In Terminal:
 ```
 mkdir C:\GermanDigest
 mkdir C:\GermanDigest\input
 mkdir C:\GermanDigest\output
 mkdir C:\GermanDigest\archive
+mkdir C:\GermanDigest\scripts
+```
+
+---
+
+## Step 3 — Copy scripts to the working folder
+
+```
+cp -r RPA\GermanDigest\scripts\* C:\GermanDigest\scripts\
 ```
 
 ---
@@ -45,63 +45,48 @@ pip install requests beautifulsoup4 pandas openpyxl fpdf2
 
 ---
 
-## Step 5 — Copy scripts to working folder
+## Step 5 — Test the Python pipeline (without UiPath)
 
+Copy the sample input file:
 ```
-xcopy /E /I RPA\GermanDigest\scripts C:\GermanDigest\scripts
-```
-
----
-
-## Step 6 — Test the Python pipeline (without UiPath)
-
-Copy the sample input file to the working folder:
-```
-copy RPA\GermanDigest\input\sample_raw_searches.xlsx C:\GermanDigest\input\raw_searches.xlsx
+cp RPA\GermanDigest\input\sample_raw_searches.xlsx C:\GermanDigest\input\raw_searches.xlsx
 ```
 
-Then run each script in order:
+Run each script in order:
 
 ```
 python C:\GermanDigest\scripts\1_extract_words.py
 ```
-Expected output: `Done. 10 unique words written to C:\GermanDigest\input\url_list.txt`
+Expected: `Done. 10 unique words written to C:\GermanDigest\input\url_list.txt`
 
 ```
 python C:\GermanDigest\scripts\2_tar_creator.py
 ```
-Expected output: `Archive saved: C:\GermanDigest\archive\YYYYMMDD_crawl.tar.gz`
+Expected: `Archive saved: C:\GermanDigest\archive\YYYYMMDD_crawl.tar.gz`
 
 ```
 python C:\GermanDigest\scripts\3_extractor.py
 ```
-Expected output: `Done. X words written to C:\GermanDigest\output\vocabulary_YYYYMMDD.xlsx`
+Expected: `Done. X words written to C:\GermanDigest\output\vocabulary_YYYYMMDD.xlsx`
 
 ```
 python C:\GermanDigest\scripts\4_pdf_generator.py
 ```
-Expected output: `PDF saved: C:\GermanDigest\output\digest_YYYYMMDD.pdf`
+Expected: `PDF saved: C:\GermanDigest\output\digest_YYYYMMDD.pdf`
 
-Open the PDF in `C:\GermanDigest\output\` to verify.
-
----
-
-## Step 7 — Install UiPath Studio (if not already installed)
-
-Download from: https://www.uipath.com/start-trial  
-Install UiPath Studio Community Edition (free).
+Open the PDF in `C:\GermanDigest\output\` to verify the vocabulary cards.
 
 ---
 
-## Step 8 — Build the UiPath workflow
+## Step 6 — Build the UiPath workflow
 
-The UiPath workflow will:
+Open UiPath Studio and create a new project. The workflow will:
 1. Open Chrome and navigate to browser history
-2. Filter German-learning URLs
+2. Filter for German-learning URLs
 3. Write URLs to `C:\GermanDigest\input\raw_searches.xlsx`
-4. Trigger Scripts 1–4 using `Start Process` activity
+4. Trigger Scripts 1–4 using the `Start Process` activity
 
-*(UiPath workflow file will be added to this repo once built.)*
+*(UiPath workflow .xaml file will be added to this repo once built.)*
 
 ---
 
@@ -110,7 +95,7 @@ The UiPath workflow will:
 ```
 C:\GermanDigest\
 ├── input\
-│   ├── raw_searches.xlsx       ← UiPath writes here (or paste sample for testing)
+│   ├── raw_searches.xlsx       ← UiPath writes here
 │   └── url_list.txt            ← Script 1 writes here automatically
 ├── output\
 │   ├── vocabulary_YYYYMMDD.xlsx
@@ -130,8 +115,6 @@ C:\GermanDigest\
 
 | Problem | Fix |
 |---|---|
-| `python` not recognised | Re-install Python and tick "Add Python to PATH" |
-| `ModuleNotFoundError` | Run `pip install requests beautifulsoup4 pandas openpyxl fpdf2` again |
-| Script 2 shows "Possibly blocked" | DWDS rate-limited you — wait 30 seconds and re-run |
-| PDF is empty | Check that Script 3 ran successfully and vocabulary Excel has data |
-| Git not recognised | Install Git from https://git-scm.com/download/win |
+| `ModuleNotFoundError` | Run `pip install requests beautifulsoup4 pandas openpyxl fpdf2` |
+| Script 2 shows "Possibly blocked" | DWDS rate-limited — wait 30 seconds and re-run |
+| PDF is empty | Check Script 3 ran successfully and vocabulary Excel has data |
