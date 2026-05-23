@@ -10,10 +10,11 @@ import pandas as pd
 import re
 from pathlib import Path
 
-BASE_DIR   = Path(__file__).parent.parent  # GermanDigest/
-INPUT_FILE = BASE_DIR / "input" / "raw_searches.xlsx"
-URL_LIST   = BASE_DIR / "input" / "url_list.txt"
-VOCAB_OUT  = BASE_DIR / "output" / "vocabulary_words.xlsx"
+BASE_DIR      = Path(__file__).parent.parent  # GermanDigest/
+INPUT_FILE    = BASE_DIR / "input" / "raw_searches.xlsx"
+URL_LIST      = BASE_DIR / "input" / "url_list.txt"
+VOCAB_OUT     = BASE_DIR / "output" / "vocabulary_words.xlsx"
+NOTEBOOKLM_TXT = BASE_DIR / "output" / "notebooklm_source.txt"
 
 # Words to strip from search queries
 FILLER = {
@@ -94,12 +95,25 @@ with open(URL_LIST, 'w', encoding='utf-8') as f:
     for r in rows:
         f.write(f"{r['id']}\t{r['dwds_url']}\t{r['cleaned']}\n")
 
-# Write vocabulary Excel for NotebookLM / PDF
+# Write vocabulary Excel for PDF backup
 (BASE_DIR / "output").mkdir(parents=True, exist_ok=True)
 pd.DataFrame(rows)[['id', 'word', 'cleaned', 'dwds_url']].to_excel(
     str(VOCAB_OUT), index=False, sheet_name='Vocabulary'
 )
 
+# Write plain-text source for NotebookLM upload
+import datetime
+today = datetime.date.today().strftime('%d %B %Y')
+with open(NOTEBOOKLM_TXT, 'w', encoding='utf-8') as f:
+    f.write(f"German Vocabulary — {today}\n")
+    f.write("=" * 40 + "\n\n")
+    f.write("Words searched this period:\n\n")
+    for r in rows:
+        f.write(f"- {r['word']}\n")
+    f.write("\n")
+    f.write("Source: Google search history (myactivity.google.com)\n")
+
 print(f"Done. {len(rows)} German words found.")
-print(f"  url_list  -> {URL_LIST}")
-print(f"  vocabulary -> {VOCAB_OUT}")
+print(f"  url_list       -> {URL_LIST}")
+print(f"  vocabulary     -> {VOCAB_OUT}")
+print(f"  notebooklm_src -> {NOTEBOOKLM_TXT}")
