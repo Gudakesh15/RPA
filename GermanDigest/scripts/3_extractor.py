@@ -28,20 +28,15 @@ def parse_dwds_page(html, word):
     soup = BeautifulSoup(html, 'html.parser')
     entry = {'word': word, 'meaning': '', 'example': '', 'usage_note': '', 'source': f"https://www.dwds.de/wb/{word}"}
 
-    # primary definition block
-    definition_tag = soup.find('div', class_=re.compile(r'dwdswb-definition'))
+    # definition — lives on a <span>, not a <div>
+    definition_tag = soup.find(class_='dwdswb-definition')
     if definition_tag:
         entry['meaning'] = definition_tag.get_text(separator=' ', strip=True)[:300]
 
-    # first example sentence
-    example_tag = soup.find('span', class_=re.compile(r'dwdswb-belegtext'))
+    # best example sentence: kompetenzbeispiel first, belegtext as fallback
+    example_tag = soup.find(class_='dwdswb-kompetenzbeispiel') or soup.find(class_='dwdswb-belegtext')
     if example_tag:
-        entry['example'] = example_tag.get_text(strip=True)[:300]
-
-    # usage / grammatical note
-    note_tag = soup.find('div', class_=re.compile(r'dwdswb-verwendungsbeispiel|dwdswb-ft'))
-    if note_tag and not entry['example']:
-        entry['example'] = note_tag.get_text(separator=' ', strip=True)[:300]
+        entry['example'] = example_tag.get_text(separator=' ', strip=True)[:300]
 
     return entry
 
