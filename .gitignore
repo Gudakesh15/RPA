@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.env
+venv/
+env/
+
+# Output files (generated at runtime — don't commit)
+GermanDigest/input/raw_searches.xlsx
+GermanDigest/input/url_list.txt
+GermanDigest/output/
+GermanDigest/archive/
+
+# UiPath
+*.xaml.bak
+.objects/
