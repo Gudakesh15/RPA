@@ -1,4 +1,4 @@
-# German Browser-to-PDF Learning Digest Bot
+# German Browser-to-NotebookLM Learning Digest Bot
 ### Product Development Document
 **Course:** Masters Sem 2 — RPA Seminar  
 **Last updated:** 2026-05-23  
@@ -7,7 +7,7 @@
 
 ## 1. Problem Statement
 
-Non-native German learners search words throughout the day (on Google, Duden, DeepL, Linguee, DWDS, Reverso) but lose those learning moments in browser history. The goal is to automate the collection of those searches and turn them into structured, revisable learning material.
+Non-native German learners search words throughout the day (on Google, Duden, DeepL, Linguee, DWDS, Reverso) but lose those learning moments in browser history. The goal is to automate the collection of those searches and turn them into structured, revisable learning material — including AI-generated audio and video overviews.
 
 ---
 
@@ -16,10 +16,12 @@ Non-native German learners search words throughout the day (on Google, Duden, De
 A UiPath-orchestrated RPA pipeline that:
 1. Reads German vocabulary searches from Chrome browser history
 2. Extracts and deduplicates the searched words
-3. Crawls dictionary pages (DWDS) to get meanings and examples
-4. Generates a PDF learning digest
+3. Produces a clean vocabulary list
+4. Uploads the list to NotebookLM, which generates an AI-powered audio/video revision overview
 
-**Key insight:** Google account sync means Chrome history on the desktop includes searches made on any device (phone, tablet) logged into the same account. UiPath targets `myactivity.google.com` or Chrome history to collect these cross-device searches.
+**Key insight:** Google account sync means Chrome history on the desktop includes searches made on any device (phone, tablet). UiPath targets `myactivity.google.com` or `chrome://history` to collect these cross-device searches automatically.
+
+**Why NotebookLM over PDF:** NotebookLM is an AI — it understands the German words from the vocabulary list without needing explicit meanings pre-scraped. It generates richer revision material (audio overviews, quizzes, summaries) than a static PDF, and the upload can be automated by UiPath. This removes the need for web scraping dictionary pages entirely.
 
 ---
 
@@ -27,94 +29,99 @@ A UiPath-orchestrated RPA pipeline that:
 
 | Decision | Chosen approach | Why |
 |---|---|---|
-| Browser input method | Chrome history via UiPath browser automation | Cross-device via Google sync; avoids manual Excel input |
-| History source | `myactivity.google.com` (preferred) or `chrome://history` | Regular web page, more UiPath-friendly than `chrome://` internal pages |
-| Word enrichment source | DWDS (`dwds.de`) | More scraper-friendly than Duden; reliable German dictionary |
-| Scraping infrastructure | Adapted from existing `Avi's Crawler` Python scripts | TAR-based HTML archiving + BeautifulSoup parsing already proven |
-| Orchestration | UiPath triggers Python scripts via `Start Process` activity | UiPath handles browser + file I/O; Python handles crawling + PDF |
-| PDF generation | Python `fpdf2` library | Lightweight, no external dependencies, UiPath-triggerable |
+| Browser input method | Chrome history via UiPath browser automation | Cross-device via Google sync; no manual input |
+| History source | `myactivity.google.com` (preferred) or `chrome://history` | Regular web page, UiPath-friendly |
+| Output destination | NotebookLM (primary) + PDF (backup/demo) | NotebookLM gives richer AI revision; PDF kept for demo purposes |
+| Word enrichment | Not required for NotebookLM path | NotebookLM understands words directly from the vocabulary list |
+| Python scraping scripts | Kept as optional/demo path | Scripts 2–3 (TAR + DWDS) shown as technical depth; not needed for main flow |
+| Orchestration | UiPath triggers Python + automates NotebookLM upload | UiPath handles full pipeline end to end |
 | Platform | Windows laptop | UiPath runs natively on Windows |
 
 ---
 
 ## 4. MVP Scope
 
-**In scope:**
-- UiPath reads Chrome history → writes URLs to Excel
-- Python extracts German words from URLs, deduplicates, builds DWDS lookup URLs
-- Python crawls DWDS pages, archives HTML (TAR)
-- Python parses HTML, extracts meanings + examples → vocabulary Excel
-- Python generates PDF digest
+### Primary pipeline (NotebookLM path)
+- UiPath scrapes Chrome history → filters German-learning URLs → writes to Excel
+- Python Script 1 extracts and deduplicates German words → vocabulary Excel
+- UiPath uploads vocabulary Excel to NotebookLM
+- NotebookLM generates audio overview, quiz, and summary
+
+### Backup / demo pipeline (PDF path)
+- Python Scripts 2–4 crawl DWDS, parse HTML, generate PDF
+- Shown in presentation as technical depth — demonstrates web scraping, TAR archiving, BeautifulSoup parsing, PDF generation
 
 **Out of scope for MVP:**
-- NotebookLM upload (manual step if desired)
-- LLM-generated enrichment (template-based for now)
-- Automatic scheduling (manual trigger)
+- Automatic scheduling (manual trigger for now)
 - Anki/flashcard export
+- LLM API enrichment
 
 ---
 
 ## 5. Pipeline
 
+### Primary (NotebookLM)
 ```
-[Chrome Browser History]
+[Chrome Browser History — synced across all devices via Google account]
         |
         v
-[UiPath] — scrapes history page, filters German-learning URLs
+[UiPath] — opens myactivity.google.com, filters German-learning URLs
         |
         v
-[input/raw_searches.xlsx] — columns: url, page_title, timestamp
+[GermanDigest/input/raw_searches.xlsx]
+  columns: url, page_title, timestamp
         |
         v
 [Script 1: 1_extract_words.py]
-  - parses query strings (Google, DeepL, Duden, DWDS, Linguee, Reverso)
+  - parses query strings (Google, DeepL, Duden, Linguee, Reverso)
   - strips filler words: meaning, translation, bedeutung, deutsch...
   - deduplicates
-  - builds DWDS lookup URLs
-  - writes: input/url_list.txt
-        |
-        v
-[Script 2: 2_tar_creator.py]
-  - reads url_list.txt
-  - crawls each DWDS page with session + user-agent rotation
-  - archives HTML to: archive/YYYYMMDD_crawl.tar.gz
-        |
-        v
-[Script 3: 3_extractor.py]
-  - opens TAR archive
-  - parses each DWDS page with BeautifulSoup
-  - extracts: word, meaning, example sentence, usage note, source URL
   - writes: output/vocabulary_YYYYMMDD.xlsx
         |
         v
-[Script 4: 4_pdf_generator.py]
-  - reads vocabulary Excel
-  - generates structured PDF with word cards
-  - writes: output/digest_YYYYMMDD.pdf
+[UiPath] — opens notebooklm.google.com, uploads vocabulary Excel
         |
         v
-[PDF Digest] — ready for revision / optional NotebookLM upload
+[NotebookLM] — AI generates audio overview, quiz, summary, flashcards
+```
+
+### Backup (PDF)
+```
+[output/vocabulary_YYYYMMDD.xlsx]
+        |
+        v
+[Script 2: 2_tar_creator.py] — crawls DWDS pages → TAR archive
+        |
+        v
+[Script 3: 3_extractor.py] — parses HTML → enriched vocabulary Excel
+        |
+        v
+[Script 4: 4_pdf_generator.py] — generates PDF digest
+        |
+        v
+[output/digest_YYYYMMDD.pdf]
 ```
 
 ---
 
-## 6. Folder Structure (Windows)
+## 6. Folder Structure
 
 ```
-C:\GermanDigest\
-├── input\
-│   ├── raw_searches.xlsx       ← UiPath writes here
-│   └── url_list.txt            ← Script 1 writes here
-├── output\
-│   ├── vocabulary_YYYYMMDD.xlsx
-│   └── digest_YYYYMMDD.pdf
-├── archive\
-│   └── YYYYMMDD_crawl.tar.gz
-└── scripts\
-    ├── 1_extract_words.py
-    ├── 2_tar_creator.py
-    ├── 3_extractor.py
-    └── 4_pdf_generator.py
+RPA/
+└── GermanDigest/
+    ├── input/
+    │   ├── raw_searches.xlsx       ← UiPath writes here
+    │   └── url_list.txt            ← Script 1 writes here (backup path only)
+    ├── output/
+    │   ├── vocabulary_YYYYMMDD.xlsx  ← main output, uploaded to NotebookLM
+    │   └── digest_YYYYMMDD.pdf       ← backup PDF output
+    ├── archive/
+    │   └── YYYYMMDD_crawl.tar.gz   ← backup path only
+    └── scripts/
+        ├── 1_extract_words.py
+        ├── 2_tar_creator.py        ← backup/demo
+        ├── 3_extractor.py          ← backup/demo
+        └── 4_pdf_generator.py      ← backup/demo
 ```
 
 ---
@@ -123,19 +130,17 @@ C:\GermanDigest\
 
 | File | Purpose | Status |
 |---|---|---|
-| `GermanDigest/scripts/1_extract_words.py` | Parse URLs → extract German words → build DWDS URLs | Done |
-| `GermanDigest/scripts/2_tar_creator.py` | Crawl DWDS pages → save HTML to TAR archive | Done |
-| `GermanDigest/scripts/3_extractor.py` | Parse TAR archive → extract vocabulary → Excel | Done |
-| `GermanDigest/scripts/4_pdf_generator.py` | Vocabulary Excel → PDF digest | Done |
-| `Avi's Crawler/Aviral.py` | Original HTTP crawler (source reference) | Existing |
-| `Avi's Crawler/1_TarFileCreator.py` | Original TAR creator (source reference) | Existing |
-| `Avi's Crawler/2_Dormeo Information extractor.py` | Original HTML extractor (source reference) | Existing |
-| `Avi's Crawler/3_PushDataToSQL (dormeo).py` | Original SQL pusher (source reference) | Existing |
-| UiPath workflow | Browser automation — scrape history → write Excel | To do |
+| `GermanDigest/scripts/1_extract_words.py` | Parse URLs → extract German words → vocabulary Excel | Done |
+| `GermanDigest/scripts/2_tar_creator.py` | Crawl DWDS pages → TAR archive (backup/demo) | Done |
+| `GermanDigest/scripts/3_extractor.py` | Parse TAR → enriched vocabulary Excel (backup/demo) | Done |
+| `GermanDigest/scripts/4_pdf_generator.py` | Vocabulary Excel → PDF digest (backup/demo) | Done |
+| `GermanDigest/input/sample_raw_searches.xlsx` | Test input — 10 German search URLs + 2 irrelevant | Done |
+| `Avi's Crawler/` | Original crawler scripts — source reference for adaptation | Existing |
+| UiPath workflow | Browser scraping + Script 1 trigger + NotebookLM upload | To do |
 
 ---
 
-## 8. Python Dependencies (install on Windows laptop)
+## 8. Python Dependencies
 
 ```
 pip install requests beautifulsoup4 pandas openpyxl fpdf2
@@ -145,18 +150,22 @@ pip install requests beautifulsoup4 pandas openpyxl fpdf2
 
 ## 9. UiPath Workflow — To Build
 
-The UiPath workflow needs to:
+### Part A: Input collection
+1. Open Chrome → navigate to `myactivity.google.com`
+2. Scrape history entries (URL + page title)
+3. Filter for German-learning keywords: `meaning`, `bedeutung`, `übersetzung`, `translation`, `duden`, `dwds`, `linguee`, `reverso`, `deepl`, `was bedeutet`, `synonym`
+4. Write filtered URLs to `GermanDigest/input/raw_searches.xlsx`
 
-1. **Open Chrome** and navigate to `myactivity.google.com` (or `chrome://history`)
-2. **Scrape entries** — extract URL and page title from each history item
-3. **Filter** — keep only entries matching German-learning keywords:
-   - `meaning`, `bedeutung`, `übersetzung`, `translation`, `duden`, `dwds`, `linguee`, `reverso`, `deepl`, `was bedeutet`, `synonym`
-4. **Write to Excel** — save filtered URLs to `C:\GermanDigest\input\raw_searches.xlsx`
-5. **Trigger Script 1** — `Start Process: python C:\GermanDigest\scripts\1_extract_words.py`
-6. **Trigger Script 2** — `Start Process: python C:\GermanDigest\scripts\2_tar_creator.py`
-7. **Trigger Script 3** — `Start Process: python C:\GermanDigest\scripts\3_extractor.py`
-8. **Trigger Script 4** — `Start Process: python C:\GermanDigest\scripts\4_pdf_generator.py`
-9. **Open output folder** — show the user the generated PDF
+### Part B: Word extraction
+5. Trigger Script 1 via `Start Process`: `python GermanDigest\scripts\1_extract_words.py`
+6. Wait for script to complete
+
+### Part C: NotebookLM upload
+7. Open Chrome → navigate to `notebooklm.google.com`
+8. Create new notebook or open existing
+9. Upload `GermanDigest/output/vocabulary_YYYYMMDD.xlsx`
+10. Wait for NotebookLM to process
+11. Optionally trigger audio overview generation
 
 ---
 
@@ -164,11 +173,10 @@ The UiPath workflow needs to:
 
 | Risk | Mitigation |
 |---|---|
-| `myactivity.google.com` layout changes break UiPath selectors | Add fallback: manual URL paste into `raw_searches.xlsx` |
-| DWDS blocks scraper | User-agent rotation + retry logic already built into Script 2 |
-| DWDS HTML structure changes break BeautifulSoup selectors | CSS class patterns use `re.compile` for partial match flexibility |
-| UiPath Chrome extension can't access `chrome://` pages | Use `myactivity.google.com` instead |
-| PDF fonts/layout issues on Windows | `fpdf2` uses built-in Helvetica — no external font files needed |
+| `myactivity.google.com` layout changes break selectors | Fallback: user pastes URLs manually into `raw_searches.xlsx` |
+| NotebookLM UI changes break UiPath selectors | Manual upload as fallback — still demonstrates the concept |
+| UiPath Chrome extension blocked on `chrome://` pages | Use `myactivity.google.com` instead |
+| DWDS selectors break (backup path) | Backup path is demo only — not critical for main flow |
 
 ---
 
@@ -176,35 +184,42 @@ The UiPath workflow needs to:
 
 | Person | Responsibility |
 |---|---|
-| Person 1 | UiPath workflow — browser history scraping + Excel output + script triggers |
-| Person 2 | Python Scripts 1–3 — word extraction, TAR crawling, HTML parsing |
-| Person 3 | Python Script 4 — PDF generation + testing end-to-end pipeline |
+| Person 1 | UiPath Part A — browser history scraping + Excel output |
+| Person 2 | UiPath Part B+C — trigger Script 1 + NotebookLM upload automation |
+| Person 3 | Python scripts + PDF backup demo + end-to-end testing |
 
 ---
 
-## 12. Next Steps
+## 12. Progress Tracker
 
-- [ ] Build UiPath workflow (browser → Excel → trigger scripts)
-- [ ] Test Script 1 with a sample `raw_searches.xlsx` (10 real German search URLs)
-- [ ] Test Script 2 crawling DWDS and verify HTML archive is created
-- [ ] Verify Script 3 BeautifulSoup selectors against live DWDS HTML
-- [ ] Test Script 4 PDF output formatting
-- [ ] End-to-end test on Windows laptop
-- [ ] Initialize GitHub repo and push all files
-- [ ] Prepare presentation slides
-- [ ] Write final report
+| Task | Status |
+|---|---|
+| Project architecture defined | Done |
+| GitHub repo set up | Done |
+| Script 1: extract_words.py | Done |
+| Script 2: tar_creator.py | Done |
+| Script 3: extractor.py | Done |
+| Script 4: pdf_generator.py | Done |
+| Sample test input created | Done |
+| Scripts tested on Windows (pipeline validated) | In progress |
+| UiPath workflow — Part A (browser scraping) | To do |
+| UiPath workflow — Part B (trigger Script 1) | To do |
+| UiPath workflow — Part C (NotebookLM upload) | To do |
+| End-to-end test | To do |
+| Presentation slides | To do |
+| Final report | To do |
 
 ---
 
 ## 13. Presentation Outline (draft)
 
-1. Problem — what learners lose every day
-2. Solution overview — the pipeline
-3. Demo — run the bot live (or recorded)
-4. Architecture — BPMN diagram
-5. Key technical decisions — why UiPath + Python, why DWDS, why TAR
-6. Results — sample PDF digest
-7. Limitations and future work (NotebookLM, LLM enrichment, scheduling)
+1. **Problem** — what learners lose every day
+2. **Solution overview** — the two-path pipeline
+3. **Live demo** — run the bot: browser → vocabulary Excel → NotebookLM
+4. **Technical deep dive** — BPMN diagram, web scraping, TAR archiving, BeautifulSoup (backup path as evidence of technical work)
+5. **Key decisions** — why NotebookLM over PDF, why Google sync, why UiPath + Python
+6. **Results** — NotebookLM audio overview of the week's German words
+7. **Limitations and future work** — scheduling, LLM enrichment, Anki export
 
 ---
 
