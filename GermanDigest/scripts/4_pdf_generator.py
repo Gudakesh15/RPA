@@ -10,7 +10,7 @@ import datetime
 from pathlib import Path
 from fpdf import FPDF
 
-BASE_DIR   = Path(r"C:\GermanDigest")
+BASE_DIR   = Path(__file__).parent.parent  # GermanDigest/
 OUTPUT_DIR = BASE_DIR / "output"
 
 dn       = datetime.datetime.now()

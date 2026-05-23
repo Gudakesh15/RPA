@@ -13,7 +13,7 @@ import pandas as pd
 from pathlib import Path
 from bs4 import BeautifulSoup
 
-BASE_DIR    = Path(r"C:\GermanDigest")
+BASE_DIR    = Path(__file__).parent.parent  # GermanDigest/
 ARCHIVE_DIR = BASE_DIR / "archive"
 OUTPUT_DIR  = BASE_DIR / "output"
 

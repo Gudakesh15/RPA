@@ -19,29 +19,17 @@ Then open the cloned folder in VS Code: **File → Open Folder → select the `R
 
 ---
 
-## Step 2 — Create the working folder structure
+## Step 2 — Create the output folders
 
-In the VS Code integrated terminal (`` Ctrl+` ``):
+The `GermanDigest` folder is already in the repo. You just need to create the subfolders that git doesn't track. In the VS Code integrated terminal (`` Ctrl+` ``):
 ```
-mkdir C:\GermanDigest
-mkdir C:\GermanDigest\input
-mkdir C:\GermanDigest\output
-mkdir C:\GermanDigest\archive
-mkdir C:\GermanDigest\scripts
+mkdir GermanDigest\output
+mkdir GermanDigest\archive
 ```
 
 ---
 
-## Step 3 — Copy scripts to the working folder
-
-In the VS Code terminal:
-```
-cp -r GermanDigest\scripts\* C:\GermanDigest\scripts\
-```
-
----
-
-## Step 4 — Install Python dependencies
+## Step 3 — Install Python dependencies
 
 ```
 pip install requests beautifulsoup4 pandas openpyxl fpdf2
@@ -49,40 +37,40 @@ pip install requests beautifulsoup4 pandas openpyxl fpdf2
 
 ---
 
-## Step 5 — Test the Python pipeline (without UiPath)
+## Step 4 — Test the Python pipeline (without UiPath)
 
-Copy the sample input file:
+Copy the sample input file so Script 1 can find it:
 ```
-cp GermanDigest\input\sample_raw_searches.xlsx C:\GermanDigest\input\raw_searches.xlsx
+cp GermanDigest\input\sample_raw_searches.xlsx GermanDigest\input\raw_searches.xlsx
 ```
 
 Run each script in order from the VS Code terminal:
 
 ```
-python C:\GermanDigest\scripts\1_extract_words.py
+python GermanDigest\scripts\1_extract_words.py
 ```
-Expected: `Done. 10 unique words written to C:\GermanDigest\input\url_list.txt`
+Expected: `Done. 10 unique words written to ...GermanDigest\input\url_list.txt`
 
 ```
-python C:\GermanDigest\scripts\2_tar_creator.py
+python GermanDigest\scripts\2_tar_creator.py
 ```
-Expected: `Archive saved: C:\GermanDigest\archive\YYYYMMDD_crawl.tar.gz`
+Expected: `Archive saved: ...GermanDigest\archive\YYYYMMDD_crawl.tar.gz`
 
 ```
-python C:\GermanDigest\scripts\3_extractor.py
+python GermanDigest\scripts\3_extractor.py
 ```
-Expected: `Done. X words written to C:\GermanDigest\output\vocabulary_YYYYMMDD.xlsx`
+Expected: `Done. X words written to ...GermanDigest\output\vocabulary_YYYYMMDD.xlsx`
 
 ```
-python C:\GermanDigest\scripts\4_pdf_generator.py
+python GermanDigest\scripts\4_pdf_generator.py
 ```
-Expected: `PDF saved: C:\GermanDigest\output\digest_YYYYMMDD.pdf`
+Expected: `PDF saved: ...GermanDigest\output\digest_YYYYMMDD.pdf`
 
-Open the PDF in `C:\GermanDigest\output\` to verify the vocabulary cards.
+Open the PDF in `GermanDigest\output\` to verify the vocabulary cards.
 
 ---
 
-## Step 6 — Build the UiPath workflow
+## Step 5 — Build the UiPath workflow
 
 Open UiPath Studio and create a new project. The workflow will:
 1. Open Chrome and navigate to browser history

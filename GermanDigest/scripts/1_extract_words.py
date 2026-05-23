@@ -11,7 +11,7 @@ import os
 from urllib.parse import urlparse, parse_qs, unquote
 from pathlib import Path
 
-BASE_DIR = Path(r"C:\GermanDigest")
+BASE_DIR    = Path(__file__).parent.parent  # GermanDigest/
 INPUT_FILE  = BASE_DIR / "input" / "raw_searches.xlsx"
 URL_LIST    = BASE_DIR / "input" / "url_list.txt"
 

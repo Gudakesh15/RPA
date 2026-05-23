@@ -12,7 +12,7 @@ import tarfile
 import datetime
 from pathlib import Path
 
-BASE_DIR    = Path(r"C:\GermanDigest")
+BASE_DIR    = Path(__file__).parent.parent  # GermanDigest/
 URL_LIST    = BASE_DIR / "input" / "url_list.txt"
 ARCHIVE_DIR = BASE_DIR / "archive"
 

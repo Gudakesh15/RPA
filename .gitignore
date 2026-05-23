@@ -13,8 +13,10 @@ env/
 # Output files (generated at runtime — don't commit)
 GermanDigest/input/raw_searches.xlsx
 GermanDigest/input/url_list.txt
-GermanDigest/output/
-GermanDigest/archive/
+GermanDigest/output/*
+GermanDigest/archive/*
+!GermanDigest/output/.gitkeep
+!GermanDigest/archive/.gitkeep
 
 # Keep sample input for testing
 !GermanDigest/input/sample_raw_searches.xlsx
