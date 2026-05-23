@@ -56,30 +56,35 @@ class DigestPDF(FPDF):
         self.ln(4)
 
     def word_card(self, index, row):
-        self.ln(6)
+        self.ln(4)
         # word heading
         self.set_font('Helvetica', 'B', 13)
         self.set_text_color(20, 80, 160)
-        self.cell(0, 9, f"{index}. {row['word']}", ln=True)
+        self.set_x(self.l_margin)
+        self.multi_cell(0, 9, f"{index}. {row['word']}")
 
         def labeled_row(label, value):
             if not value or str(value).strip() in ('', 'nan'):
                 return
+            self.set_x(self.l_margin)
             self.set_font('Helvetica', 'B', 10)
             self.set_text_color(80, 80, 80)
-            self.cell(28, 6, label, ln=False)
+            self.multi_cell(0, 6, label)
+            self.set_x(self.l_margin + 4)
             self.set_font('Helvetica', '', 10)
             self.set_text_color(30, 30, 30)
             self.multi_cell(0, 6, str(value).strip())
+            self.ln(1)
 
-        labeled_row('Meaning:',    row.get('meaning', ''))
-        labeled_row('Example:',    row.get('example', ''))
-        labeled_row('Note:',       row.get('usage_note', ''))
-        labeled_row('Source:',     row.get('source', ''))
+        labeled_row('Meaning:',  row.get('meaning', ''))
+        labeled_row('Example:',  row.get('example', ''))
+        labeled_row('Note:',     row.get('usage_note', ''))
+        labeled_row('Source:',   row.get('source', ''))
 
         # separator line
         self.set_draw_color(200, 200, 200)
-        self.line(self.get_x(), self.get_y() + 2, 200, self.get_y() + 2)
+        self.line(self.l_margin, self.get_y() + 2, self.w - self.r_margin, self.get_y() + 2)
+        self.ln(2)
 
 
 # --- main ---
