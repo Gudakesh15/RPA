@@ -16,6 +16,9 @@ GermanDigest/input/url_list.txt
 GermanDigest/output/
 GermanDigest/archive/
 
+# Keep sample input for testing
+!GermanDigest/input/sample_raw_searches.xlsx
+
 # UiPath
 *.xaml.bak
 .objects/
