@@ -10,6 +10,23 @@ import datetime
 from pathlib import Path
 from fpdf import FPDF
 
+
+def sanitize(text):
+    if not text or str(text).strip() in ('', 'nan'):
+        return ''
+    text = str(text)
+    replacements = {
+        '“': '"',  '”': '"',   # curly double quotes
+        '„': '"',  '‟': '"',
+        '‘': "'",  '’': "'",   # curly single quotes
+        '–': '-',  '—': '-',   # en dash, em dash
+        '…': '...', ' ': ' ',  # ellipsis, non-breaking space
+        '­': '',                    # soft hyphen
+    }
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
+    return text.encode('latin-1', errors='replace').decode('latin-1')
+
 BASE_DIR   = Path(__file__).parent.parent  # GermanDigest/
 OUTPUT_DIR = BASE_DIR / "output"
 
@@ -41,7 +58,7 @@ class DigestPDF(FPDF):
         self.ln(14)
         self.set_font('Helvetica', '', 14)
         self.set_text_color(100, 100, 100)
-        self.cell(0, 8, date_str, align='C')
+        self.cell(0, 8, sanitize(date_str), align='C')
         self.ln(10)
         self.cell(0, 8, f'{word_count} words collected', align='C')
 
@@ -61,10 +78,10 @@ class DigestPDF(FPDF):
         self.set_font('Helvetica', 'B', 13)
         self.set_text_color(20, 80, 160)
         self.set_x(self.l_margin)
-        self.multi_cell(0, 9, f"{index}. {row['word']}")
+        self.multi_cell(0, 9, sanitize(f"{index}. {row['word']}"))
 
         def labeled_row(label, value):
-            if not value or str(value).strip() in ('', 'nan'):
+            if not sanitize(value):
                 return
             self.set_x(self.l_margin)
             self.set_font('Helvetica', 'B', 10)
@@ -73,7 +90,7 @@ class DigestPDF(FPDF):
             self.set_x(self.l_margin + 4)
             self.set_font('Helvetica', '', 10)
             self.set_text_color(30, 30, 30)
-            self.multi_cell(0, 6, str(value).strip())
+            self.multi_cell(0, 6, sanitize(value))
             self.ln(1)
 
         labeled_row('Meaning:',  row.get('meaning', ''))
